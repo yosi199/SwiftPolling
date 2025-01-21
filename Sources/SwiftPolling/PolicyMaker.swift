@@ -8,15 +8,15 @@
 import Foundation
 
 public protocol PolicyMaker: Sendable {
-    func make(currentIteration: Int) -> any PollingPolicy
+    func make(currentIteration: Int) -> any PollingStrategy
 }
 
-public protocol PollingPolicy: Sendable {
+public protocol PollingStrategy: Sendable {
     var maxRuns: Int { get }
     var durationBetweenRuns: TimeInterval { get }
 }
 
-public struct LinearPollingPolicy: PollingPolicy, PolicyMaker {
+public struct LinearPollingPolicy: PollingStrategy, PolicyMaker {
     public let maxRuns: Int
     public let durationBetweenRuns: TimeInterval
     
@@ -25,16 +25,16 @@ public struct LinearPollingPolicy: PollingPolicy, PolicyMaker {
         self.durationBetweenRuns = durationBetweenRuns
     }
     
-    public func make(currentIteration: Int) -> PollingPolicy {
+    public func make(currentIteration: Int) -> PollingStrategy {
         LinearPollingPolicy(maxRuns: maxRuns, durationBetweenRuns: durationBetweenRuns)
     }
 }
 
-public struct ExponentialPollingPolicy: PollingPolicy, PolicyMaker {
+public struct ExponentialPollingPolicy: PollingStrategy, PolicyMaker {
     public let maxRuns: Int
     public let durationBetweenRuns: TimeInterval
     
-    public func make(currentIteration: Int) -> PollingPolicy {
+    public func make(currentIteration: Int) -> PollingStrategy {
         let calculatedDuration = durationBetweenRuns * pow(2, Double(currentIteration))
         
         return ExponentialPollingPolicy(
@@ -43,7 +43,7 @@ public struct ExponentialPollingPolicy: PollingPolicy, PolicyMaker {
     }
 }
 
-public struct ExponentialWithMaxPollingPolicy: PollingPolicy, PolicyMaker {
+public struct ExponentialWithMaxPollingPolicy: PollingStrategy, PolicyMaker {
     public let maxRuns: Int
     public let durationBetweenRuns: TimeInterval
     public let maxInterval: TimeInterval
@@ -54,7 +54,7 @@ public struct ExponentialWithMaxPollingPolicy: PollingPolicy, PolicyMaker {
         self.maxInterval = maxInterval
     }
     
-    public func make(currentIteration: Int) -> PollingPolicy {
+    public func make(currentIteration: Int) -> PollingStrategy {
         let calculatedDuration = durationBetweenRuns * pow(2, Double(currentIteration))
         let useInterval = min(calculatedDuration, maxInterval)
         return ExponentialWithMaxPollingPolicy(
