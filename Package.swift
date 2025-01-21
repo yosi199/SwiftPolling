@@ -5,11 +5,15 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftPolling",
+    platforms: [.iOS(.v16), .macOS(.v12), .watchOS(.v9), .tvOS(.v15)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "SwiftPolling",
             targets: ["SwiftPolling"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-numerics", .upToNextMajor(from: "1.0.0")),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -18,7 +22,7 @@ let package = Package(
             name: "SwiftPolling"),
         .testTarget(
             name: "SwiftPollingTests",
-            dependencies: ["SwiftPolling"]
+            dependencies: ["SwiftPolling", .product(name: "Numerics", package: "swift-numerics")]
         ),
     ]
 )

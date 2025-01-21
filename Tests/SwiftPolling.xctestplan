@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "A9BFCD66-0CA7-4F16-BDB1-B0807D4AD293",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SwiftPollingTests",
+        "name" : "SwiftPollingTests"
+      }
+    }
+  ],
+  "version" : 1
+}
