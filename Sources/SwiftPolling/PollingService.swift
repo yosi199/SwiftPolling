@@ -7,15 +7,21 @@
 
 import Foundation
 
+public protocol PollingServiceProtocol: Actor {
+    func stream() -> AsyncThrowingStream<Int, Error>
+    func finish()
+}
+
 public actor PollingService: PollingServiceProtocol {
     
-    private var policyMaker: PolicyMaker
+    private var strategy: PollingStrategy
     private var lastRunTimestamp = Date()
     
     private var continuation: AsyncThrowingStream<Int, Error>.Continuation?
     private var task: Task<Void, Never>?
-    public init(policyMaker: PolicyMaker) {
-        self.policyMaker = policyMaker
+    
+    public init(strategy: PollingStrategy) {
+        self.strategy = strategy
     }
     
     public func stream() -> AsyncThrowingStream<Int, Error> {
@@ -23,16 +29,16 @@ public actor PollingService: PollingServiceProtocol {
             self.continuation = continuation
             self.task = Task {
                 do {
-                    var policy = policyMaker.make(currentIteration: 0)
+                    var strategy = strategy.make(currentIteration: 0)
                     var currentIteration = 1
                     
-                    while currentIteration <= policy.maxRuns {
-                        policy = policyMaker.make(currentIteration: currentIteration)
+                    while currentIteration <= strategy.maxRuns {
+                        strategy = strategy.make(currentIteration: currentIteration)
                         
                         if currentIteration == 1 {
                             continuation.yield(currentIteration)
                         } else {
-                            let waitDurationNanoseconds = UInt64(policy.durationBetweenRuns * Double(NSEC_PER_SEC))
+                            let waitDurationNanoseconds = UInt64(strategy.durationBetweenRuns * Double(NSEC_PER_SEC))
                             try await Task.sleep(nanoseconds: waitDurationNanoseconds)
                             continuation.yield(currentIteration)
                         }
@@ -51,9 +57,4 @@ public actor PollingService: PollingServiceProtocol {
         task?.cancel()
         continuation?.finish()
     }
-}
-
-public protocol PollingServiceProtocol: Actor {
-    func stream() -> AsyncThrowingStream<Int, Error>
-    func finish()
 }
