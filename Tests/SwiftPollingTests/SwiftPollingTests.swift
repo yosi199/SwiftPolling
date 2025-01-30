@@ -122,3 +122,14 @@ public enum PollingError: Error, Equatable {
     
     #expect(completed == 3)
 }
+
+@Test func testNoRetainCycle() async throws {
+    let strategy = LinearPollingStrategy(maxRuns: 10, durationBetweenRuns: 0.1)
+    var service: PollingService? = PollingService(strategy: strategy)
+    weak var weakPollingService = service  // Weak reference to track deallocation
+
+    _ = await service?.stream()  // Start the stream
+
+    service = nil  // Attempt to deallocate
+    #expect(weakPollingService == nil, "PollingService was not deallocated, possible retain cycle!")
+}

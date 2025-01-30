@@ -27,9 +27,11 @@ public actor PollingService: PollingServiceProtocol {
     public func stream() -> AsyncThrowingStream<Int, Error> {
         return AsyncThrowingStream { continuation in
             self.continuation = continuation
-            self.task = Task {
+            self.task = Task { [weak self] in
+                guard let self = self else { return }
+                
                 do {
-                    var strategy = strategy.make(currentIteration: 0)
+                    var strategy = await strategy.make(currentIteration: 0)
                     var currentIteration = 1
                     
                     while currentIteration <= strategy.maxRuns {
@@ -55,6 +57,7 @@ public actor PollingService: PollingServiceProtocol {
     
     public func finish() {
         task?.cancel()
+        task = nil
         continuation?.finish()
     }
 }
